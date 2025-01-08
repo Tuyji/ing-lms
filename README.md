@@ -249,7 +249,7 @@ Response:
 ## Technical Documentation
 
 Please see the file here:
-[Loan Management System Overview](/ing-lms/blob/main/LoanManagementSystemOverview.docx)
+[Loan Management System Overview](./LoanManagementSystemOverview.docx)
 
 ## License
 
