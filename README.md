@@ -73,8 +73,8 @@ cd ing-lms
 
 ### Access the Application
 
-- **API Base URL**: `http://localhost:8080`
-- **H2 Console**: `http://localhost:8080/h2-console`
+- **API Base URL**: `http://localhost:8090`
+- **H2 Console**: `http://localhost:8090/h2-console`
   - Username: `sa`
   - Password: (empty by default)
 
@@ -88,6 +88,8 @@ cd ing-lms
   - Username and password are defined in the application configuration (e.g., `SecurityConfig`).
 
 ### Loan Management
+
+BaseUrl: http://localhost:8090
 
 #### 1. **Create Loan**
 
