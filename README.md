@@ -233,7 +233,7 @@ Response:
 
 ## Swagger/OpenAPI Documentation
 
-- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **Swagger UI**: `http://localhost:8090/swagger-ui/index.html`
 - **OpenAPI Spec**: `http://localhost:8080/v3/api-docs`
 
 ---
