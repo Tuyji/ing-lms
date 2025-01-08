@@ -55,8 +55,8 @@ The Loan API is a Spring Boot application designed for managing loans in a banki
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/your-repo/loan-api.git
-cd loan-api
+git clone https://github.com/Tuyji/ing-lms.git
+cd ing-lms
 ```
 
 ### Build and Run the Application
