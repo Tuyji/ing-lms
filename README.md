@@ -246,6 +246,11 @@ Response:
 
 ---
 
+## Technical Documentation
+
+Please see the file here:
+[Loan Management System Overview](./Loan Management System Overview.docx)
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
