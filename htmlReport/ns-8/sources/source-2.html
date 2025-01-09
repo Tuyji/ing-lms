@@ -1,0 +1,98 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > Loan</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.ing.loan.model.entity</a>
+</div>
+
+<h1>Coverage Summary for Class: Loan (com.ing.loan.model.entity)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">Loan$HibernateInstantiator$013ZOPGV</td>
+  </tr>
+  <tr>
+    <td class="name">Loan$HibernateProxy$pUz20agg</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.ing.loan.model.entity;
+&nbsp;
+&nbsp;import jakarta.persistence.Entity;
+&nbsp;import jakarta.persistence.GeneratedValue;
+&nbsp;import jakarta.persistence.Id;
+&nbsp;import jakarta.persistence.ManyToOne;
+&nbsp;import lombok.Data;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.time.LocalDate;
+&nbsp;
+&nbsp;
+&nbsp;@Entity
+&nbsp;@Data
+&nbsp;public class Loan {
+&nbsp;    @Id @GeneratedValue
+&nbsp;    private Long id;
+&nbsp;    @ManyToOne
+&nbsp;    private Customer customer;
+&nbsp;    private BigDecimal loanAmount; // The amount of money the customer borrowed
+&nbsp;    private Integer numberOfInstallment; // The number of installments the loan will be paid in
+&nbsp;    private LocalDate createDate;
+&nbsp;    private Boolean isPaid = false; // Indicates whether the loan has been paid back
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-09 23:42</div>
+</div>
+</body>
+</html>

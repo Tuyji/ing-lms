@@ -1,0 +1,216 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > AuthorizationAspect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.ing.loan.aspect</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthorizationAspect (com.ing.loan.aspect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthorizationAspect</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.2%
+  </span>
+  <span class="absValue">
+    (25/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.ing.loan.aspect;
+&nbsp;
+&nbsp;import com.ing.loan.errorhandling.ResourceNotFoundException;
+&nbsp;import com.ing.loan.model.dto.LoanRequestDTO;
+&nbsp;import com.ing.loan.model.entity.Loan;
+&nbsp;import com.ing.loan.repository.CustomerRepository;
+&nbsp;import com.ing.loan.repository.LoanRepository;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import org.aspectj.lang.JoinPoint;
+&nbsp;import org.aspectj.lang.annotation.Aspect;
+&nbsp;import org.aspectj.lang.annotation.Before;
+&nbsp;import org.aspectj.lang.reflect.MethodSignature;
+&nbsp;import org.springframework.security.access.AccessDeniedException;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;
+&nbsp;@Aspect
+&nbsp;@Component
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class AuthorizationAspect {
+&nbsp;
+&nbsp;    private final LoanRepository loanRepository;
+&nbsp;    private final CustomerRepository customerRepository;
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * This method checks if the logged-in user is authorized to perform the action.
+&nbsp;     * It allows admins to perform any action, but regular users can only operate on their own data.
+&nbsp;     * The method extracts the customer ID from the method arguments and compares it with the logged-in user&#39;s ID.
+&nbsp;     * If the IDs do not match, an AccessDeniedException is thrown.
+&nbsp;     *
+&nbsp;     * @param joinPoint the join point representing the intercepted method
+&nbsp;     */
+&nbsp;    @Before(&quot;@annotation(com.ing.loan.aspect.AuthorizeAction) &amp;&amp; execution(* *(..))&quot;)
+&nbsp;    public void checkAuthorization(JoinPoint joinPoint) {
+<b class="fc">&nbsp;        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</b>
+<b class="fc">&nbsp;        String username = authentication.getName();</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean isAdmin = authentication.getAuthorities().stream()</b>
+<b class="fc">&nbsp;                .anyMatch(auth -&gt; auth.getAuthority().equals(&quot;ROLE_ADMIN&quot;));</b>
+&nbsp;
+<b class="fc">&nbsp;        if (isAdmin) {</b>
+&nbsp;            // Admins have unrestricted access
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Long loggedInCustomerId = getLoggedInCustomerId(username);</b>
+<b class="fc">&nbsp;        Long customerId = extractCustomerId(joinPoint);</b>
+&nbsp;
+<b class="fc">&nbsp;        if (!loggedInCustomerId.equals(customerId)) {</b>
+<b class="fc">&nbsp;            throw new AccessDeniedException(&quot;You can only operate on your own data.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Extracts the customer ID from the method arguments based on the method name.
+&nbsp;     * This method handles different cases for different methods:
+&nbsp;     * - For `createLoan`, it extracts the customer ID from the `LoanRequestDTO`.
+&nbsp;     * - For `listLoans`, it directly uses the customer ID parameter.
+&nbsp;     * - For `listInstallments` and `payLoan`, it fetches the loan entity using the loan ID and retrieves the customer ID.
+&nbsp;     *
+&nbsp;     * @param joinPoint the join point representing the intercepted method
+&nbsp;     * @return the extracted customer ID
+&nbsp;     * @throws ResourceNotFoundException if the loan or customer is not found
+&nbsp;     * @throws IllegalArgumentException if the method is unsupported for authorization aspect
+&nbsp;     */
+&nbsp;    public Long extractCustomerId(JoinPoint joinPoint) {
+<b class="fc">&nbsp;        Object[] args = joinPoint.getArgs();</b>
+<b class="fc">&nbsp;        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();</b>
+<b class="fc">&nbsp;        Method method = methodSignature.getMethod();</b>
+&nbsp;
+&nbsp;        // Handle each method case
+<b class="fc">&nbsp;        if (method.getName().equals(&quot;createLoan&quot;)) {</b>
+&nbsp;            // Extract customerId from LoanRequestDTO
+<b class="fc">&nbsp;            LoanRequestDTO loanRequest = (LoanRequestDTO) args[0];</b>
+<b class="fc">&nbsp;            return loanRequest.customerId();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (method.getName().equals(&quot;listLoans&quot;)) {</b>
+&nbsp;            // Directly use the customerId parameter
+<b class="fc">&nbsp;            return (Long) args[0];</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (method.getName().equals(&quot;listInstallments&quot;) || method.getName().equals(&quot;payLoan&quot;)) {</b>
+&nbsp;            // Fetch the loan entity using loanId and retrieve the customer ID
+<b class="fc">&nbsp;            Long loanId = (Long) args[0];</b>
+<b class="fc">&nbsp;            Loan loan = loanRepository.findById(loanId)</b>
+<b class="fc">&nbsp;                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Loan&quot;, &quot;ID&quot;, loanId));</b>
+<b class="fc">&nbsp;            return loan.getCustomer().getId();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        throw new IllegalArgumentException(&quot;Unsupported method for authorization aspect&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Fetches the customer ID based on the logged-in username.
+&nbsp;     *
+&nbsp;     * @param username the username of the logged-in user
+&nbsp;     * @return the customer ID
+&nbsp;     * @throws ResourceNotFoundException if the customer is not found
+&nbsp;     */
+&nbsp;    public Long getLoggedInCustomerId(String username) {
+&nbsp;        // Fetch customer ID based on the logged-in username (CUSTOMER role)
+<b class="fc">&nbsp;        return customerRepository.findByName(username)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Customer&quot;, &quot;username&quot;, username))</b>
+<b class="fc">&nbsp;                .getId();</b>
+&nbsp;    }
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-09 23:42</div>
+</div>
+</body>
+</html>

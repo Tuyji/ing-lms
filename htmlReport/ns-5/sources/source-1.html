@@ -1,0 +1,178 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > GlobalExceptionHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.ing.loan.errorhandling</a>
+</div>
+
+<h1>Coverage Summary for Class: GlobalExceptionHandler (com.ing.loan.errorhandling)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GlobalExceptionHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (1/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (1/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.ing.loan.errorhandling;
+&nbsp;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.validation.FieldError;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.annotation.ExceptionHandler;
+&nbsp;import org.springframework.web.bind.annotation.RestControllerAdvice;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@RestControllerAdvice
+<b class="fc">&nbsp;public class GlobalExceptionHandler {</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle ResourceNotFoundException
+&nbsp;     */
+&nbsp;    @ExceptionHandler(ResourceNotFoundException.class)
+&nbsp;    public ResponseEntity&lt;ErrorResponse&gt; handleResourceNotFoundException(ResourceNotFoundException ex) {
+<b class="nc">&nbsp;        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.NOT_FOUND);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle InvalidRequestException
+&nbsp;     */
+&nbsp;    @ExceptionHandler(InvalidRequestException.class)
+&nbsp;    public ResponseEntity&lt;ErrorResponse&gt; handleInvalidRequestException(InvalidRequestException ex) {
+<b class="nc">&nbsp;        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.BAD_REQUEST);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle validation errors (e.g., @Valid or @Validated failures)
+&nbsp;     */
+&nbsp;    @ExceptionHandler(MethodArgumentNotValidException.class)
+&nbsp;    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; handleValidationException(MethodArgumentNotValidException ex) {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {</b>
+<b class="nc">&nbsp;            errors.put(fieldError.getField(), fieldError.getDefaultMessage());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errors, HttpStatus.BAD_REQUEST);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle all other exceptions
+&nbsp;     */
+&nbsp;    @ExceptionHandler(Exception.class)
+&nbsp;    public ResponseEntity&lt;ErrorResponse&gt; handleGlobalException(Exception ex) {
+<b class="nc">&nbsp;        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, &quot;An unexpected error occurred.&quot;);</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle HTTP 4XX (client errors)
+&nbsp;     */
+&nbsp;    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+&nbsp;    public ResponseEntity&lt;ErrorResponse&gt; handleClientErrors(Exception ex) {
+<b class="nc">&nbsp;        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.BAD_REQUEST);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Handle HTTP 5XX (server errors)
+&nbsp;     */
+&nbsp;    @ExceptionHandler(RuntimeException.class)
+&nbsp;    public ResponseEntity&lt;ErrorResponse&gt; handleServerErrors(RuntimeException ex) {
+<b class="nc">&nbsp;        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());</b>
+<b class="nc">&nbsp;        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-09 23:42</div>
+</div>
+</body>
+</html>

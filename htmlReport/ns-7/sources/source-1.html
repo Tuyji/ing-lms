@@ -1,0 +1,460 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > LoanServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.ing.loan.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: LoanServiceImpl (com.ing.loan.service.impl)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoanServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (10/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.4%
+  </span>
+  <span class="absValue">
+    (122/135)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LoanServiceImpl$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (10/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.4%
+  </span>
+  <span class="absValue">
+    (122/135)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.ing.loan.service.impl;
+&nbsp;
+&nbsp;import com.ing.loan.aspect.AuthorizeAction;
+&nbsp;import com.ing.loan.errorhandling.InvalidRequestException;
+&nbsp;import com.ing.loan.errorhandling.ResourceNotFoundException;
+&nbsp;import com.ing.loan.model.dto.*;
+&nbsp;import com.ing.loan.model.entity.Customer;
+&nbsp;import com.ing.loan.model.entity.Loan;
+&nbsp;import com.ing.loan.model.entity.LoanInstallment;
+&nbsp;import com.ing.loan.repository.CustomerRepository;
+&nbsp;import com.ing.loan.repository.LoanInstallmentRepository;
+&nbsp;import com.ing.loan.repository.LoanRepository;
+&nbsp;import com.ing.loan.service.LoanService;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+&nbsp;@RequiredArgsConstructor
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class LoanServiceImpl implements LoanService {
+&nbsp;
+&nbsp;    private final CustomerRepository customerRepository;
+&nbsp;    private final LoanRepository loanRepository;
+&nbsp;    private final LoanInstallmentRepository loanInstallmentRepository;
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a loan for a customer based on the provided loan request.
+&nbsp;     * The loan amount is calculated based on the amount and interest rate provided
+&nbsp;     * in the loan request.
+&nbsp;     * The total loan amount is calculated as amount * (1 + interest rate).
+&nbsp;     * The customer&#39;s credit limit is checked to ensure that it is enough to get the loan.
+&nbsp;     * If the credit limit is not enough, an InvalidRequestException is thrown.
+&nbsp;     * The loan is saved to the database along with the generated installments.
+&nbsp;     * The customer&#39;s used credit limit is updated to reflect the new loan amount.
+&nbsp;     * The response contains the details of the created loan.
+&nbsp;     *
+&nbsp;     * @param loanRequest the loan request containing the details for the loan
+&nbsp;     * @return a LoanResponseDTO containing the details of the created loan
+&nbsp;     * @throws InvalidRequestException if the loan request parameters are invalid
+&nbsp;     * @throws ResourceNotFoundException if the customer is not found
+&nbsp;     */
+&nbsp;    @AuthorizeAction
+&nbsp;    @Transactional
+&nbsp;    @Override
+&nbsp;    public LoanResponseDTO createLoan(LoanRequestDTO loanRequest) {
+<b class="fc">&nbsp;        log.info(&quot;Starting loan creation process for customer ID: {}&quot;, loanRequest.customerId());</b>
+&nbsp;
+&nbsp;        // Step 1: Validate request parameters
+<b class="fc">&nbsp;        log.debug(&quot;Validating loan request parameters: {}&quot;, loanRequest);</b>
+<b class="fc">&nbsp;        validateLoanRequest(loanRequest);</b>
+&nbsp;
+&nbsp;        // Step 2: Retrieve customer
+<b class="fc">&nbsp;        log.debug(&quot;Retrieving customer with ID: {}&quot;, loanRequest.customerId());</b>
+<b class="fc">&nbsp;        Customer customer = customerRepository.findById(loanRequest.customerId())</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; {</b>
+<b class="nc">&nbsp;                    log.error(&quot;Customer not found with ID: {}&quot;, loanRequest.customerId());</b>
+<b class="nc">&nbsp;                    return new ResourceNotFoundException(&quot;Customer&quot;, &quot;ID&quot;, loanRequest.customerId());</b>
+&nbsp;                });
+&nbsp;
+&nbsp;        // Step 3: Calculate total loan amount and check credit limit
+<b class="fc">&nbsp;        log.debug(&quot;Calculating total loan amount for customer ID: {}&quot;, loanRequest.customerId());</b>
+<b class="fc">&nbsp;        BigDecimal totalLoanAmount = loanRequest.amount().multiply(BigDecimal.valueOf(1 + loanRequest.interestRate()));</b>
+<b class="fc">&nbsp;        log.info(&quot;Total loan amount calculated: {}&quot;, totalLoanAmount);</b>
+<b class="fc">&nbsp;        if (customer.getCreditLimit().subtract(customer.getUsedCreditLimit()).compareTo(totalLoanAmount) &lt; 0) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;Insufficient credit limit for customer ID: {}. Credit limit: {}, Used: {}, Required: {}&quot;,</b>
+<b class="fc">&nbsp;                    loanRequest.customerId(), customer.getCreditLimit(), customer.getUsedCreditLimit(), totalLoanAmount);</b>
+<b class="fc">&nbsp;            throw new InvalidRequestException(&quot;Customer&#39;s credit limit is not enough to get this loan.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Step 4: Create loan and save
+<b class="fc">&nbsp;        Loan loan = new Loan();</b>
+<b class="fc">&nbsp;        loan.setCustomer(customer);</b>
+<b class="fc">&nbsp;        loan.setLoanAmount(totalLoanAmount);</b>
+<b class="fc">&nbsp;        loan.setNumberOfInstallment(loanRequest.numberOfInstallments());</b>
+<b class="fc">&nbsp;        loan.setCreateDate(LocalDate.now());</b>
+<b class="fc">&nbsp;        loan.setIsPaid(false);</b>
+<b class="fc">&nbsp;        loan = loanRepository.save(loan);</b>
+<b class="fc">&nbsp;        log.info(&quot;Loan created and saved with ID: {}&quot;, loan.getId());</b>
+&nbsp;
+&nbsp;        // Step 5: Generate installments
+<b class="fc">&nbsp;        List&lt;LoanInstallment&gt; installments = createInstallments(loan, loanRequest.numberOfInstallments(), totalLoanAmount);</b>
+<b class="fc">&nbsp;        loanInstallmentRepository.saveAll(installments);</b>
+<b class="fc">&nbsp;        log.info(&quot;Loan installments saved for loan ID: {}&quot;, loan.getId());</b>
+&nbsp;
+&nbsp;        // Step 6: Update customer&#39;s used credit limit
+<b class="fc">&nbsp;        customer.setUsedCreditLimit(customer.getUsedCreditLimit().add(totalLoanAmount));</b>
+<b class="fc">&nbsp;        customerRepository.save(customer);</b>
+<b class="fc">&nbsp;        log.info(&quot;Customer&#39;s used credit limit updated for customer ID: {}&quot;, customer.getId());</b>
+&nbsp;
+&nbsp;        // Step 7: Return response
+<b class="fc">&nbsp;        log.info(&quot;Loan creation process completed for customer ID: {}. Loan ID: {}&quot;, loanRequest.customerId(), loan.getId());</b>
+<b class="fc">&nbsp;        return new LoanResponseDTO(loan.getId(), totalLoanAmount, loan.getIsPaid());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Lists all loans for a specific customer based on the provided filters.
+&nbsp;     * The filters include whether the loan is paid or not, and the number of installments.
+&nbsp;     * The customer is validated to ensure that they exist.
+&nbsp;     * The loans are retrieved from the database based on the provided filters.
+&nbsp;     * The loans are then mapped to LoanSummaryDTOs for response.
+&nbsp;     *
+&nbsp;     * @param customerId the ID of the customer to list loans for
+&nbsp;     * @param isPaid the filter for paid status of the loans
+&nbsp;     * @param numberOfInstallments the filter for the number of installments
+&nbsp;     * @return a list of LoanSummaryDTOs containing the details of the loans
+&nbsp;     * @throws ResourceNotFoundException if the customer is not found
+&nbsp;     */
+&nbsp;    @AuthorizeAction
+&nbsp;    @Override
+&nbsp;    public List&lt;LoanSummaryDTO&gt; listLoans(Long customerId, Boolean isPaid, Integer numberOfInstallments) {
+<b class="fc">&nbsp;        log.info(&quot;Listing loans for customer ID: {}. Filters - isPaid: {}, numberOfInstallments: {}&quot;, customerId, isPaid, numberOfInstallments);</b>
+&nbsp;
+&nbsp;        // Step 1: Validate customer exists
+<b class="fc">&nbsp;        log.debug(&quot;Validating existence of customer with ID: {}&quot;, customerId);</b>
+<b class="fc">&nbsp;        boolean customerExists = loanRepository.existsByCustomerId(customerId);</b>
+<b class="fc">&nbsp;        if (!customerExists) {</b>
+<b class="fc">&nbsp;            log.error(&quot;Customer not found with ID: {}&quot;, customerId);</b>
+<b class="fc">&nbsp;            throw new ResourceNotFoundException(&quot;Customer&quot;, &quot;ID&quot;, customerId);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Step 2: Retrieve loans with optional filters
+<b class="fc">&nbsp;        List&lt;Loan&gt; loans = loanRepository.findAllByCustomerIdAndFilters(customerId, isPaid, numberOfInstallments);</b>
+<b class="fc">&nbsp;        log.info(&quot;Retrieved {} loans for customer ID: {}.&quot;, loans.size(), customerId);</b>
+&nbsp;
+&nbsp;        // Step 3: Map loans to DTOs
+<b class="fc">&nbsp;        List&lt;LoanSummaryDTO&gt; loanSummaries = loans.stream()</b>
+<b class="fc">&nbsp;                .map(loan -&gt; new LoanSummaryDTO(</b>
+<b class="fc">&nbsp;                        loan.getId(),</b>
+<b class="fc">&nbsp;                        loan.getLoanAmount(),</b>
+<b class="fc">&nbsp;                        loan.getIsPaid(),</b>
+<b class="fc">&nbsp;                        loan.getNumberOfInstallment()</b>
+&nbsp;                ))
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;Loan listing process completed for customer ID: {}&quot;, customerId);</b>
+<b class="fc">&nbsp;        return loanSummaries;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Lists all installments for a specific loan.
+&nbsp;     * The loan is validated to ensure that it exists.
+&nbsp;     * The installments are retrieved from the database for the loan.
+&nbsp;     * The installments are then mapped to LoanInstallmentDTOs for response.
+&nbsp;     *
+&nbsp;     * @param loanId the ID of the loan to list installments for
+&nbsp;     * @return a list of LoanInstallmentDTOs containing the details of the installments
+&nbsp;     * @throws ResourceNotFoundException if the loan is not found
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    @AuthorizeAction
+&nbsp;    public List&lt;LoanInstallmentDTO&gt; listInstallments(Long loanId) {
+<b class="fc">&nbsp;        log.info(&quot;Listing installments for loan ID: {}&quot;, loanId);</b>
+&nbsp;
+&nbsp;        // Step 1: Validate loan exists
+<b class="fc">&nbsp;        log.debug(&quot;Validating existence of loan with ID: {}&quot;, loanId);</b>
+<b class="fc">&nbsp;        Loan loan = loanRepository.findById(loanId)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; {</b>
+<b class="fc">&nbsp;                    log.error(&quot;Loan not found with ID: {}&quot;, loanId);</b>
+<b class="fc">&nbsp;                    return new ResourceNotFoundException(&quot;Loan&quot;, &quot;ID&quot;, loanId);</b>
+&nbsp;                });
+<b class="fc">&nbsp;        log.info(&quot;Loan with ID: {} exists.&quot;, loanId);</b>
+&nbsp;
+&nbsp;        // Step 2: Retrieve all installments for the loan
+<b class="fc">&nbsp;        List&lt;LoanInstallment&gt; installments = loanInstallmentRepository.findByLoanId(loan.getId());</b>
+<b class="fc">&nbsp;        log.info(&quot;Retrieved {} installments for loan ID: {}.&quot;, installments.size(), loanId);</b>
+&nbsp;
+&nbsp;        // Step 3: Map installments to DTOs
+<b class="fc">&nbsp;        List&lt;LoanInstallmentDTO&gt; installmentDTOs = installments.stream()</b>
+<b class="fc">&nbsp;                .map(installment -&gt; new LoanInstallmentDTO(</b>
+<b class="fc">&nbsp;                        installment.getId(),</b>
+<b class="fc">&nbsp;                        installment.getAmount(),</b>
+<b class="fc">&nbsp;                        installment.getPaidAmount(),</b>
+<b class="fc">&nbsp;                        installment.getDueDate(),</b>
+<b class="fc">&nbsp;                        installment.getPaymentDate(),</b>
+<b class="fc">&nbsp;                        installment.getIsPaid()</b>
+&nbsp;                ))
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;Installment listing process completed for loan ID: {}&quot;, loanId);</b>
+<b class="fc">&nbsp;        return installmentDTOs;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Pays the installments for a specific loan based on the provided payment amount.
+&nbsp;     * The installments that can be paid are those that are due within the next 3 months.
+&nbsp;     * The installments are paid in order of due date until the payment amount is exhausted.
+&nbsp;     * The customer&#39;s used credit limit is updated to reflect the paid amount.
+&nbsp;     * The response contains the number of installments paid, the total amount paid,
+&nbsp;     * and a flag indicating if the loan is fully paid.
+&nbsp;     *
+&nbsp;     * @param loanId the ID of the loan to pay
+&nbsp;     * @param paymentAmount the amount to pay
+&nbsp;     * @return a PaymentResponseDTO containing the payment details
+&nbsp;     * @throws InvalidRequestException if the loan is already fully paid or no installments are available for payment
+&nbsp;     * @throws ResourceNotFoundException if the loan is not found
+&nbsp;     */
+&nbsp;    @AuthorizeAction
+&nbsp;    @Transactional
+&nbsp;    @Override
+&nbsp;    public PaymentResponseDTO payLoan(Long loanId, BigDecimal paymentAmount) {
+<b class="fc">&nbsp;        log.info(&quot;Initiating payment for loan ID: {} with payment amount: {}&quot;, loanId, paymentAmount);</b>
+&nbsp;
+&nbsp;        // Step 1: Validate loan
+<b class="fc">&nbsp;        log.debug(&quot;Validating loan existence for loan ID: {}&quot;, loanId);</b>
+<b class="fc">&nbsp;        Loan loan = loanRepository.findById(loanId)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; {</b>
+<b class="nc">&nbsp;                    log.error(&quot;Loan not found with ID: {}&quot;, loanId);</b>
+<b class="nc">&nbsp;                    return new ResourceNotFoundException(&quot;Loan&quot;, &quot;ID&quot;, loanId);</b>
+&nbsp;                });
+&nbsp;
+<b class="fc">&nbsp;        if (loan.getIsPaid()) {</b>
+<b class="nc">&nbsp;            log.warn(&quot;Loan with ID: {} is already fully paid.&quot;, loanId);</b>
+<b class="nc">&nbsp;            throw new InvalidRequestException(&quot;Loan is already fully paid.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Step 2: Retrieve installments that can be paid (due within 3 months)
+<b class="fc">&nbsp;        LocalDate maxDueDate = LocalDate.now().plusMonths(3);</b>
+<b class="fc">&nbsp;        List&lt;LoanInstallment&gt; unpaidInstallments = loanInstallmentRepository</b>
+<b class="fc">&nbsp;                .findByLoanIdAndIsPaidFalse(loanId).stream()</b>
+<b class="fc">&nbsp;                .filter(inst -&gt; !inst.getDueDate().isAfter(maxDueDate))</b>
+<b class="fc">&nbsp;                .sorted((a, b) -&gt; a.getDueDate().compareTo(b.getDueDate()))</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;
+<b class="fc">&nbsp;        if (unpaidInstallments.isEmpty()) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;No installments available for payment for loan ID: {} within the next 3 months.&quot;, loanId);</b>
+<b class="fc">&nbsp;            throw new InvalidRequestException(&quot;No installments available for payment within the next 3 months.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;Found {} unpaid installments for loan ID: {} eligible for payment.&quot;, unpaidInstallments.size(), loanId);</b>
+&nbsp;
+&nbsp;        // Step 3: Pay installments
+<b class="fc">&nbsp;        int installmentsPaid = 0;</b>
+<b class="fc">&nbsp;        BigDecimal totalPaid = BigDecimal.ZERO;</b>
+&nbsp;
+<b class="fc">&nbsp;        for (LoanInstallment installment : unpaidInstallments) {</b>
+<b class="fc">&nbsp;            log.debug(&quot;Processing installment with due date: {} and amount: {}&quot;, installment.getDueDate(), installment.getAmount());</b>
+<b class="fc">&nbsp;            if (paymentAmount.compareTo(installment.getAmount()) &gt;= 0) {</b>
+&nbsp;                // Pay this installment
+<b class="fc">&nbsp;                paymentAmount = paymentAmount.subtract(installment.getAmount());</b>
+<b class="fc">&nbsp;                totalPaid = totalPaid.add(installment.getAmount());</b>
+<b class="fc">&nbsp;                installment.setPaidAmount(installment.getAmount());</b>
+<b class="fc">&nbsp;                installment.setPaymentDate(LocalDate.now());</b>
+<b class="fc">&nbsp;                installment.setIsPaid(true);</b>
+<b class="fc">&nbsp;                loanInstallmentRepository.save(installment);</b>
+&nbsp;
+<b class="fc">&nbsp;                installmentsPaid++;</b>
+<b class="fc">&nbsp;                log.info(&quot;Paid installment with due date: {} for loan ID: {}. Remaining payment amount: {}&quot;,</b>
+<b class="fc">&nbsp;                        installment.getDueDate(), loanId, paymentAmount);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                log.info(&quot;Insufficient payment amount to cover the next installment. Stopping payments for loan ID: {}.&quot;, loanId);</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        // Step 4: Check if the loan is fully paid
+<b class="fc">&nbsp;        boolean isLoanPaid = loanInstallmentRepository.findByLoanIdAndIsPaidFalse(loanId).isEmpty();</b>
+<b class="fc">&nbsp;        if (isLoanPaid) {</b>
+<b class="nc">&nbsp;            loan.setIsPaid(true);</b>
+<b class="nc">&nbsp;            loanRepository.save(loan);</b>
+<b class="nc">&nbsp;            log.info(&quot;Loan with ID: {} is fully paid.&quot;, loanId);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            log.info(&quot;Loan with ID: {} is not fully paid. Remaining installments exist.&quot;, loanId);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Step 5: Update customer&#39;s used credit limit
+<b class="fc">&nbsp;        Customer customer = loan.getCustomer();</b>
+<b class="fc">&nbsp;        customer.setUsedCreditLimit(customer.getUsedCreditLimit().subtract(totalPaid));</b>
+<b class="fc">&nbsp;        customerRepository.save(customer);</b>
+<b class="fc">&nbsp;        log.info(&quot;Updated customer&#39;s used credit limit after payment. Customer ID: {}&quot;, customer.getId());</b>
+&nbsp;
+&nbsp;        // Step 6: Return response
+<b class="fc">&nbsp;        log.info(&quot;Payment process completed for loan ID: {}. Installments paid: {}, Total paid: {}, Loan fully paid: {}&quot;,</b>
+<b class="fc">&nbsp;                loanId, installmentsPaid, totalPaid, isLoanPaid);</b>
+<b class="fc">&nbsp;        return new PaymentResponseDTO(installmentsPaid, totalPaid, isLoanPaid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Validates the loan request parameters.
+&nbsp;     * The number of installments must be one of 6, 9, 12, or 24.
+&nbsp;     * The interest rate must be between 0.1 and 0.5.
+&nbsp;     * If the parameters are invalid, an InvalidRequestException is thrown.
+&nbsp;     * @param loanRequest
+&nbsp;     */
+&nbsp;    private void validateLoanRequest(LoanRequestDTO loanRequest) {
+&nbsp;        // Validate number of installments
+<b class="fc">&nbsp;        List&lt;Integer&gt; validInstallments = List.of(6, 9, 12, 24);</b>
+<b class="fc">&nbsp;        if (!validInstallments.contains(loanRequest.numberOfInstallments())) {</b>
+<b class="nc">&nbsp;            throw new InvalidRequestException(&quot;Invalid number of installments. Allowed values are: 6, 9, 12, 24.&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Validate interest rate
+<b class="fc">&nbsp;        if (loanRequest.interestRate() &lt; 0.1 || loanRequest.interestRate() &gt; 0.5) {</b>
+<b class="nc">&nbsp;            throw new InvalidRequestException(&quot;Invalid interest rate. Allowed range is: 0.1 - 0.5.&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a list of loan installments for a loan based on the total loan amount.
+&nbsp;     * The number of installments is determined by the loan request.
+&nbsp;     * The installment amount is calculated as total loan amount divided by the number of installments.
+&nbsp;     * The first due date is set to the first day of the next month.
+&nbsp;     * Each installment is initialized with zero paid amount and is not paid.
+&nbsp;     * @param loan the loan for which to create installments
+&nbsp;     * @param numberOfInstallments the number of installments to create
+&nbsp;     * @param totalLoanAmount the total loan amount
+&nbsp;     * @return a list of LoanInstallment objects
+&nbsp;     */
+&nbsp;    private List&lt;LoanInstallment&gt; createInstallments(Loan loan, int numberOfInstallments, BigDecimal totalLoanAmount) {
+<b class="fc">&nbsp;        List&lt;LoanInstallment&gt; installments = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        BigDecimal installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(numberOfInstallments), BigDecimal.ROUND_HALF_EVEN);</b>
+<b class="fc">&nbsp;        LocalDate firstDueDate = LocalDate.now().withDayOfMonth(1).plusMonths(1);</b>
+&nbsp;
+<b class="fc">&nbsp;        for (int i = 0; i &lt; numberOfInstallments; i++) {</b>
+<b class="fc">&nbsp;            LoanInstallment installment = new LoanInstallment();</b>
+<b class="fc">&nbsp;            installment.setLoan(loan);</b>
+<b class="fc">&nbsp;            installment.setAmount(installmentAmount);</b>
+<b class="fc">&nbsp;            installment.setDueDate(firstDueDate.plusMonths(i));</b>
+<b class="fc">&nbsp;            installment.setPaidAmount(BigDecimal.ZERO);</b>
+<b class="fc">&nbsp;            installment.setIsPaid(false);</b>
+<b class="fc">&nbsp;            installments.add(installment);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return installments;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-09 23:42</div>
+</div>
+</body>
+</html>
