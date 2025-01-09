@@ -233,7 +233,14 @@ Response:
 
 ---
 
+## Code Coverage
+
+
+[![INSERT YOUR GRAPHIC HERE](https://github.com/Tuyji/ing-lms/blob/main/src/main/resources/static/coverageReport.png)]()
+
+
 [Code coverage report link](./htmlReport/index.html)
+
 
 ## Swagger/OpenAPI Documentation
 
