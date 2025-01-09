@@ -233,7 +233,7 @@ Response:
 
 ---
 
-[Code coverage report link](./htmlReport/index.html
+[Code coverage report link](./htmlReport/index.html)
 
 ## Swagger/OpenAPI Documentation
 
