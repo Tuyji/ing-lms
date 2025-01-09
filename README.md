@@ -242,6 +242,8 @@ Response:
 [Code coverage report link](./htmlReport/index.html)
 
 
+---
+
 ## Swagger/OpenAPI Documentation
 
 - **Swagger UI**: `http://localhost:8090/swagger-ui/index.html`
