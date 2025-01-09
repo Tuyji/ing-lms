@@ -55,8 +55,8 @@ The Loan API is a Spring Boot application designed for managing loans in a banki
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/your-repo/loan-api.git
-cd loan-api
+git clone https://github.com/Tuyji/ing-lms.git
+cd ing-lms
 ```
 
 ### Build and Run the Application
@@ -73,8 +73,8 @@ cd loan-api
 
 ### Access the Application
 
-- **API Base URL**: `http://localhost:8080`
-- **H2 Console**: `http://localhost:8080/h2-console`
+- **API Base URL**: `http://localhost:8090`
+- **H2 Console**: `http://localhost:8090/h2-console`
   - Username: `sa`
   - Password: (empty by default)
 
@@ -88,6 +88,8 @@ cd loan-api
   - Username and password are defined in the application configuration (e.g., `SecurityConfig`).
 
 ### Loan Management
+
+BaseUrl: http://localhost:8090
 
 #### 1. **Create Loan**
 
@@ -249,7 +251,7 @@ Response:
 ## Technical Documentation
 
 Please see the file here:
-[Loan Management System Overview](./Loan Management System Overview.docx)
+[Loan Management System Overview](./LoanManagementSystemOverview.docx)
 
 ## License
 
