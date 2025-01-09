@@ -67,7 +67,7 @@ public class AuthorizationAspect {
      * @throws ResourceNotFoundException if the loan or customer is not found
      * @throws IllegalArgumentException if the method is unsupported for authorization aspect
      */
-    private Long extractCustomerId(JoinPoint joinPoint) {
+    public Long extractCustomerId(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
@@ -102,7 +102,7 @@ public class AuthorizationAspect {
      * @return the customer ID
      * @throws ResourceNotFoundException if the customer is not found
      */
-    private Long getLoggedInCustomerId(String username) {
+    public Long getLoggedInCustomerId(String username) {
         // Fetch customer ID based on the logged-in username (CUSTOMER role)
         return customerRepository.findByName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "username", username))
